@@ -2,14 +2,14 @@ require 'json'
 require 'httpclient'
 
 
-def get_history(prefix)
+def get_profit(prefix)
   url = 'https://attach.triautoetf.invast.jp/ranking/adviser/rankingItems.json?history=true&json=true'
   h = HTTPClient.new
   params = {'id' => ["#{prefix}_18"] }
   # res = h.post(url, '{"id":["CoreRanger_EG_201909_18"]}', 'Content-Type' => 'application/json')
   res = h.post(url, params.to_json, 'Content-Type' => 'application/json')
 
-  open("data/#{prefix}_history.json", 'w'){|f| f.write res.body }
+  open("data/#{prefix}_profit.json", 'w'){|f| f.write res.body }
 end
 
 def get_detail(id, prefix)
@@ -20,7 +20,7 @@ def get_detail(id, prefix)
   open("data/#{prefix}_detail.json", 'w'){|f| f.write json }
 end
 
-json = JSON.parse(open('list_fx_20190920.json').read)
+json = JSON.parse(open('list_fx_20190927.json').read)
 
 json.each do |row|
   id = row['COMPOSITE_ID']
@@ -29,7 +29,7 @@ json.each do |row|
   puts "#{id} #{prefix}"
 
   get_detail(id, prefix)
-  get_history(prefix)
+  get_profit(prefix)
 
 
   sleep(1)

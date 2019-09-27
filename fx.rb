@@ -12,7 +12,7 @@ require 'yaml'
 #   risk_return         2.6968792616163015
 #   roi                 158.49
 #   dd                  
-#   history             {'2018-01-02' => -105, '2018-01-03' => -173 ...}
+#   profit              {'2018-01-02' => -105, '2018-01-03' => -173 ...}
 #   ohlc                {'2018-01-02' => [o, h, l, c], '2018-01-03' => [o, h, l, c]}
 #
 
@@ -24,8 +24,8 @@ class FX
   end
 
   def set
-    @fxes = set_list_data('list_fx_20190924.json')
-    set_history
+    @fxes = set_list_data('list_fx_20190927.json')
+    set_profit
     set_ohlc
     calc_AUDNZD
   end
@@ -36,6 +36,16 @@ class FX
 
   def load_yaml(file)
     @fxes = YAML.load(open(file).read)
+  end
+
+  def output_profits(file)
+    open(file, 'w') do |f|
+      @fxes.keys.each do |pair|
+        @fxes[pair]['profit'].each do |date, profit|
+          f.puts "#{date},#{pair},#{profit}"
+        end
+      end
+    end
   end
 
   private
@@ -61,7 +71,7 @@ class FX
           'risk_return'        => risk_return,
           'roi'                => roi,
           'dd'                 => dd,
-          'history'            => {},
+          'profit'             => {},
           'ohlc'               => {}
         }
       end
@@ -69,18 +79,18 @@ class FX
       fxes
     end
 
-    def set_history
+    def set_profit
       @fxes.each do |k, v|
-        file_history = v['ranking_id_prefix']  
-        history = get_history("data/#{file_history}_history.json")
-        @fxes[k]['history'] = history
+        file_profit = v['ranking_id_prefix']  
+        profit = get_profit("data/#{file_profit}_profit.json")
+        @fxes[k]['profit'] = profit
       end
     end
 
-    def get_history(file)
+    def get_profit(file)
       json = JSON.parse(open(file).read)
       
-      history = {}
+      profits = {}
       sum = 0
       json[0]['DAILY_STATS'].each do |daily|
         date             = daily['DAY']
@@ -88,10 +98,10 @@ class FX
         valuation_profit = daily['VALUATION_PROFIT']
 
         sum += profit
-        history[date] = sum + valuation_profit
+        profits[date] = sum + valuation_profit
       end
 
-      history
+      profits
     end
     
     def set_ohlc
@@ -136,7 +146,7 @@ end
 # fxes = set_list_data(file_list)
 #
 # #
-# # set history
+# # set profit
 # #
 # fxes.each do |k, v|
 #   file_history = v['ranking_id_prefix']  
