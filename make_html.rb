@@ -51,25 +51,25 @@ __END__
   <main>
     <section id="chart">
       <canvas id="myChart"></canvas>
-      <form id="select1">
-        <% fx.fxes.each do |pair, value| %>
-          <input type="radio" name="select1" value="<%= pair %>"><%= pair %>
-        <% end %>
-        <!--
-        <input type="radio" name="select1" value="1">1
-        <input type="radio" name="select1" value="2">2
-        <input type="radio" name="select1" value="3">3
-        -->
+      <h2>左軸</h2>
+      <form id="pair_type1">
+        <input type="radio" name="pair_type1" value="profit">損益
+        <input type="radio" name="pair_type1" value="ohlc">チャート
       </form>
-      <form id="select2">
+      <form id="pair1">
         <% fx.fxes.each do |pair, value| %>
-          <input type="radio" name="select2" value="<%= pair %>"><%= pair %>
+          <input type="radio" name="pair1" value="<%= pair %>"><%= pair %>
         <% end %>
-        <!--
-        <input type="radio" name="select2" value="1">1
-        <input type="radio" name="select2" value="2">2
-        <input type="radio" name="select2" value="3">3
-        -->
+      </form>
+      <h2>右軸</h2>
+      <form id="pair_type2">
+        <input type="radio" name="pair_type2" value="profit">損益
+        <input type="radio" name="pair_type2" value="ohlc">チャート
+      </form>
+      <form id="pair2">
+        <% fx.fxes.each do |pair, value| %>
+          <input type="radio" name="pair2" value="<%= pair %>"><%= pair %>
+        <% end %>
       </form>
     </section><!-- //chart -->
 
@@ -177,14 +177,16 @@ __END__
             data: data[0],
             borderColor: 'blue',
             fill: false,
-            pointRadius: 1,
+            borderWidth: 2,
+            pointRadius: 0,
             yAxisID: 'y-axis-1',
           },
           {
             data: data[1],
             borderColor: 'red',
             fill: false,
-            pointRadius: 1,
+            borderWidth: 2,
+            pointRadius: 0,
             yAxisID: 'y-axis-2',
           },
         ]
@@ -197,7 +199,6 @@ __END__
             time:       {
               parser: 'YYYY-MM-DD',
               displayFormats: {
-                //quarter: 'YYYY/MM/dd'
                 'month': 'MM/YYYY'
               },
               unit: 'month'
@@ -217,7 +218,18 @@ __END__
     }
     var chart = new Chart(ctx, cfg)
 
-    function make_data(pair){
+    function make_data(pair, pair_type){
+      var arr
+      if(pair_type == 'profit'){
+          arr = make_data_profit(pair)
+      }
+      if(pair_type == 'ohlc'){
+          arr = make_data_chart(pair)
+      }
+      return arr
+    }
+
+    function make_data_profit(pair){
       var profits = json_fx[pair]['profit']
       var arr = []
       for(k in profits){
@@ -226,21 +238,66 @@ __END__
       return arr
     }
 
-    document.getElementById('select1').addEventListener('click', function(){
-      var element = document.getElementById("select1")
-      var select1_value = element.select1.value
-      console.log(select1_value)
-      // chart.config.data.datasets[0].data = data[select1_value - 1]
-      chart.config.data.datasets[0].data = make_data(select1_value)
+    function make_data_chart(pair){
+      var ohlcs = json_fx[pair]['ohlc']
+      var arr = []
+      // collect close data of ohlc
+      for(k in ohlcs){
+          arr.push({t: k, y: ohlcs[k][3]})  // ohlc[k] = [o, h, l, c]
+      }
+      return arr
+    }
+
+    function update_chart(value){
+      let number = value.slice(-1)  // get value number  ex) 'pair1' -> '1'
+      let pairs      = document.getElementsByName("pair" + number)
+      let pair_types = document.getElementsByName("pair_type" + number)
+      let pair = '';
+      let pair_type = ''
+      for(let i = 0; i < pairs.length; i++){
+        if(pairs[i].checked){
+          pair = pairs[i].value
+        }
+      }
+      for(let i = 0; i < pair_types.length; i++){
+        if(pair_types[i].checked){
+          pair_type = pair_types[i].value
+        }
+      }
+      console.log(pair)
+      console.log(pair_type)
+      if( pair != '' && pair_type != ''){
+        chart.config.data.datasets[number - 1].label = pair
+        chart.config.data.datasets[number - 1].data  = make_data(pair, pair_type)
+        chart.update()
+      }
+    }
+
+    radios = ['pair1', 'pair2', 'pair_type1', 'pair_type2']
+    radios.forEach(function(radio){
+      console.log(radio)
+      document.getElementById(radio).addEventListener('click', function(){
+        update_chart(radio)
+      })
+    })
+    /*
+    document.getElementById('pair1').addEventListener('click', function(){
+      var pair      = document.getElementById("pair1").pair1.value
+      var pair_type = document.getElementById("pair_type1").pair_type1.value
+      console.log(pair)
+      chart.config.data.datasets[0].label = pair
+      chart.config.data.datasets[0].data  = make_data(pair, pair_type)
+      chart.update()
+      update_chart('pair1')
+    })
+    document.getElementById('pair2').addEventListener('click', function(){
+      var pair      = document.getElementById("pair2").pair2.value
+      var pair_type = document.getElementById("pair_type2").pair_type2.value
+      chart.config.data.datasets[1].label = pair
+      chart.config.data.datasets[1].data  = make_data(pair, pair_type)
       chart.update()
     })
-    document.getElementById('select2').addEventListener('click', function(){
-      var element = document.getElementById("select2")
-      var select2_value = element.select2.value
-      // chart.config.data.datasets[1].data = data[select2_value - 1]
-      chart.config.data.datasets[1].data = make_data(select2_value)
-      chart.update()
-    })
+    */
 
   </script>
 </body>

@@ -102,7 +102,8 @@ class FX
 
         sum += profit
         # profits[date] = sum + valuation_profit
-        profits[date] = (sum.to_f + valuation_profit) / margin_recommended * 100
+        profit_loss = (sum.to_f + valuation_profit) / margin_recommended * 100
+        profits[date] = profit_loss.round(2)
       end
 
       profits
