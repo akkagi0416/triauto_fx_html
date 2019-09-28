@@ -26,6 +26,9 @@ __END__
   <meta charset="UTF-8">
   <title></title>
   <style>
+    body{
+      color: #333;
+    }
     main{
       width: 80%;
       max-width: 960px;
@@ -41,6 +44,11 @@ __END__
       font-size: 0.8rem;
       text-align: right;
     }
+    #summary td:nth-of-type(2),
+    #summary th:nth-of-type(2){
+      padding-left: 1rem;
+      text-align: left;
+    }
     #correlation td, #correlation th{
       font-size: 0.8rem;
       text-align: center;
@@ -50,38 +58,43 @@ __END__
 <body>
   <main>
     <section id="chart">
+      <h2>損益 or チャート比較</h2>
       <canvas id="myChart"></canvas>
-      <h2>左軸</h2>
+      <h3>左軸</h3>
       <form id="pair_type1">
-        <input type="radio" name="pair_type1" value="profit">損益
+        <input type="radio" name="pair_type1" value="profit" checked>損益
         <input type="radio" name="pair_type1" value="ohlc">チャート
       </form>
       <form id="pair1">
-        <% fx.fxes.each do |pair, value| %>
-          <input type="radio" name="pair1" value="<%= pair %>"><%= pair %>
+        <% fx.fxes.each.with_index do |(pair, value), i| %>
+          <input type="radio" name="pair1" value="<%= pair %>" <%= i == 0 ? 'checked' : '' %>><%= pair %>
         <% end %>
       </form>
-      <h2>右軸</h2>
+      <h3>右軸</h3>
       <form id="pair_type2">
-        <input type="radio" name="pair_type2" value="profit">損益
+        <input type="radio" name="pair_type2" value="profit" checked>損益
         <input type="radio" name="pair_type2" value="ohlc">チャート
       </form>
       <form id="pair2">
-        <% fx.fxes.each do |pair, value| %>
-          <input type="radio" name="pair2" value="<%= pair %>"><%= pair %>
+        <% fx.fxes.each.with_index do |(pair, value), i| %>
+          <input type="radio" name="pair2" value="<%= pair %>" <%= i == 0 ? 'checked' : '' %>><%= pair %>
         <% end %>
       </form>
     </section><!-- //chart -->
 
     <section id="summary">
+      <h2>指標一覧</h2>
       <table>
         <tr>
           <th>通貨ペア</th>
           <th>名前</th>
           <th>ROI(%)</th>
           <th>推奨証拠金(円)</th>
-          <th>DD(%)</th>
           <th>リスクリターン</th>
+          <th>年利(%)</th>
+          <th>標準偏差(%)</th>
+          <th>シャープレシオ</th>
+          <th>DD(%)</th>
         </tr>
         <% fx.fxes.each do |pair, value| %>
           <tr>
@@ -89,14 +102,31 @@ __END__
             <td><%= fx.fxes[pair]['name'] %></td>
             <td><%= sprintf "%.1f", fx.fxes[pair]['roi'] %></td>
             <td><%= sprintf "%d", fx.fxes[pair]['margin_recommended'] %></td>
-            <td><%= sprintf "%.1f", fx.fxes[pair]['dd'] %></td>
             <td><%= sprintf "%.2f", fx.fxes[pair]['risk_return'] %></td>
+            <%
+              profits = fx.fxes[pair]['profit'].sort{|(date1, p1), (date2, p2)| date1 <=> date2 }
+              nenri   = fx.fxes[pair]['roi'] / profits.count * 365
+              delta = []
+              profits.each_with_index do |(date, profit), i|
+                break if i == profits.count - 1
+                profit_now  = profits[i][1]
+                profit_next = profits[i+1][1]
+                delta << profit_next - profit_now
+              end
+              sd      = delta.sd * Math.sqrt(365)
+              sharp   = nenri / sd
+            %>
+            <td><%= sprintf "%.1f", nenri %></td>
+            <td><%= sprintf "%.1f", sd %></td>
+            <td><%= sprintf "%.2f", sharp %></td>
+            <td><%= sprintf "%.1f", fx.fxes[pair]['dd'] %></td>
           </tr>
         <% end %>
       </table>
     </section><!-- //summary -->
 
     <section id="correlation">
+      <h2>相関係数</h2>
       <table>
         <tr>
           <th>-</th>
@@ -174,7 +204,9 @@ __END__
       data: {
         datasets: [
           {
-            data: data[0],
+            // data: data[0],
+            data: null,
+            // borderColor: 'rgba(128, 128, 255, 1)',
             borderColor: 'blue',
             fill: false,
             borderWidth: 2,
@@ -182,7 +214,9 @@ __END__
             yAxisID: 'y-axis-1',
           },
           {
-            data: data[1],
+            //data: data[1],
+            data: null,
+            // borderColor: 'rgba(255, 128, 128, 1)',
             borderColor: 'red',
             fill: false,
             borderWidth: 2,
@@ -217,6 +251,8 @@ __END__
       }
     }
     var chart = new Chart(ctx, cfg)
+    update_chart('pair1')
+    update_chart('pair2')
 
     function make_data(pair, pair_type){
       var arr
@@ -264,18 +300,23 @@ __END__
           pair_type = pair_types[i].value
         }
       }
-      console.log(pair)
-      console.log(pair_type)
       if( pair != '' && pair_type != ''){
         chart.config.data.datasets[number - 1].label = pair
         chart.config.data.datasets[number - 1].data  = make_data(pair, pair_type)
+        if(pair_type == 'profit'){
+          chart.config.options.scales.yAxes[number - 1].ticks.max = 200
+          chart.config.options.scales.yAxes[number - 1].ticks.min = -50
+        }else{
+          delete(chart.config.options.scales.yAxes[number - 1].ticks.max)
+          delete(chart.config.options.scales.yAxes[number - 1].ticks.min)
+        }
         chart.update()
       }
     }
 
     radios = ['pair1', 'pair2', 'pair_type1', 'pair_type2']
     radios.forEach(function(radio){
-      console.log(radio)
+      // console.log(radio)
       document.getElementById(radio).addEventListener('click', function(){
         update_chart(radio)
       })
