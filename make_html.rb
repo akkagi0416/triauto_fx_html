@@ -26,8 +26,16 @@ __END__
   <meta charset="UTF-8">
   <title></title>
   <style>
+    main{
+      width: 80%;
+      max-width: 960px;
+      margin: 0 auto;
+    }
     section{
       margin-bottom: 5rem;
+    }
+    #chart form{
+      font-size: 0.8rem;
     }
     #summary td, #summary th{
       font-size: 0.8rem;
@@ -40,81 +48,83 @@ __END__
   </style>
 </head>
 <body>
-  <section id="chart">
-    <canvas id="myChart"></canvas>
-    <form id="select1">
-      <% fx.fxes.each do |pair, value| %>
-        <input type="radio" name="select1" value="<%= pair %>"><%= pair %>
-      <% end %>
-      <!--
-      <input type="radio" name="select1" value="1">1
-      <input type="radio" name="select1" value="2">2
-      <input type="radio" name="select1" value="3">3
-      -->
-    </form>
-    <form id="select2">
-      <% fx.fxes.each do |pair, value| %>
-        <input type="radio" name="select2" value="<%= pair %>"><%= pair %>
-      <% end %>
-      <!--
-      <input type="radio" name="select2" value="1">1
-      <input type="radio" name="select2" value="2">2
-      <input type="radio" name="select2" value="3">3
-      -->
-    </form>
-  </section><!-- //chart -->
-
-  <section id="summary">
-    <table>
-      <tr>
-        <th>通貨ペア</th>
-        <th>名前</th>
-        <th>ROI(%)</th>
-        <th>推奨証拠金(円)</th>
-        <th>DD(%)</th>
-        <th>リスクリターン</th>
-      </tr>
-      <% fx.fxes.each do |pair, value| %>
-        <tr>
-          <td><%= pair %></td>
-          <td><%= fx.fxes[pair]['name'] %></td>
-          <td><%= sprintf "%.1f", fx.fxes[pair]['roi'] %></td>
-          <td><%= sprintf "%d", fx.fxes[pair]['margin_recommended'] %></td>
-          <td><%= sprintf "%.1f", fx.fxes[pair]['dd'] %></td>
-          <td><%= sprintf "%.2f", fx.fxes[pair]['risk_return'] %></td>
-        </tr>
-      <% end %>
-    </table>
-  </section><!-- //summary -->
-
-  <section id="correlation">
-    <table>
-      <tr>
-        <th>-</th>
-        <% pairs.each do |pair| %>
-          <th><%= pair %></th>
+  <main>
+    <section id="chart">
+      <canvas id="myChart"></canvas>
+      <form id="select1">
+        <% fx.fxes.each do |pair, value| %>
+          <input type="radio" name="select1" value="<%= pair %>"><%= pair %>
         <% end %>
-      </tr>
-      <% pairs.each do |pair1| %>
+        <!--
+        <input type="radio" name="select1" value="1">1
+        <input type="radio" name="select1" value="2">2
+        <input type="radio" name="select1" value="3">3
+        -->
+      </form>
+      <form id="select2">
+        <% fx.fxes.each do |pair, value| %>
+          <input type="radio" name="select2" value="<%= pair %>"><%= pair %>
+        <% end %>
+        <!--
+        <input type="radio" name="select2" value="1">1
+        <input type="radio" name="select2" value="2">2
+        <input type="radio" name="select2" value="3">3
+        -->
+      </form>
+    </section><!-- //chart -->
+
+    <section id="summary">
+      <table>
         <tr>
-          <th><%= pair1 %></th>
-          <% pairs.each do |pair2| %>
-          <%
-            cor = calc_correlation(fx, pair1, pair2)
-            if cor > 0
-              # rgba = "rgba(0, 0, 255, #{cor})"
-              rgba = "rgba(128, 128, 255, #{cor})"
-            else
-              # rgba = "rgba(255, 0, 0, #{cor})"
-              rgba = "rgba(255, 128, 128, #{cor})"
-            end
-          %>
-          <td style="background-color: <%= rgba %>"><%= cor %></td>
+          <th>通貨ペア</th>
+          <th>名前</th>
+          <th>ROI(%)</th>
+          <th>推奨証拠金(円)</th>
+          <th>DD(%)</th>
+          <th>リスクリターン</th>
+        </tr>
+        <% fx.fxes.each do |pair, value| %>
+          <tr>
+            <td><%= pair %></td>
+            <td><%= fx.fxes[pair]['name'] %></td>
+            <td><%= sprintf "%.1f", fx.fxes[pair]['roi'] %></td>
+            <td><%= sprintf "%d", fx.fxes[pair]['margin_recommended'] %></td>
+            <td><%= sprintf "%.1f", fx.fxes[pair]['dd'] %></td>
+            <td><%= sprintf "%.2f", fx.fxes[pair]['risk_return'] %></td>
+          </tr>
+        <% end %>
+      </table>
+    </section><!-- //summary -->
+
+    <section id="correlation">
+      <table>
+        <tr>
+          <th>-</th>
+          <% pairs.each do |pair| %>
+            <th><%= pair %></th>
           <% end %>
         </tr>
-      <% end %>
-    </table>
-  </section><!-- //correlation -->
+        <% pairs.each do |pair1| %>
+          <tr>
+            <th><%= pair1 %></th>
+            <% pairs.each do |pair2| %>
+            <%
+              cor = calc_correlation(fx, pair1, pair2)
+              if cor > 0
+                # rgba = "rgba(0, 0, 255, #{cor})"
+                rgba = "rgba(128, 128, 255, #{cor})"
+              else
+                # rgba = "rgba(255, 0, 0, #{cor})"
+                rgba = "rgba(255, 128, 128, #{cor})"
+              end
+            %>
+            <td style="background-color: <%= rgba %>"><%= cor %></td>
+            <% end %>
+          </tr>
+        <% end %>
+      </table>
+    </section><!-- //correlation -->
+  </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>

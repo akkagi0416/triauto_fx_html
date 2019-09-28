@@ -90,6 +90,9 @@ class FX
     def get_profit(file)
       json = JSON.parse(open(file).read)
       
+      pair = json[0]['ETF_NAME_JA']
+      margin_recommended = @fxes[pair]['margin_recommended']
+
       profits = {}
       sum = 0
       json[0]['DAILY_STATS'].each do |daily|
@@ -98,7 +101,8 @@ class FX
         valuation_profit = daily['VALUATION_PROFIT']
 
         sum += profit
-        profits[date] = sum + valuation_profit
+        # profits[date] = sum + valuation_profit
+        profits[date] = (sum.to_f + valuation_profit) / margin_recommended * 100
       end
 
       profits
