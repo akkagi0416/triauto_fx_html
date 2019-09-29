@@ -4,6 +4,7 @@ require 'yaml'
 #
 # fxes
 #
+#   # load json file
 #   pair                'EURGBP'
 #   name                'コアレンジャー_ユーロ/英ポンド'
 #   ranking_id_prefix   'CoreRanger_EG_201909'
@@ -14,6 +15,10 @@ require 'yaml'
 #   dd                  
 #   profit              {'2018-01-02' => -105, '2018-01-03' => -173 ...}
 #   ohlc                {'2018-01-02' => [o, h, l, c], '2018-01-03' => [o, h, l, c]}
+# 
+#   # calc
+#   nenri               10.2
+#   sd                  15.3
 #
 
 class FX
@@ -28,6 +33,8 @@ class FX
     set_profit
     set_ohlc
     calc_AUDNZD
+    calc_nenri
+    calc_sd
   end
 
   def dump_yaml(file)
@@ -137,6 +144,34 @@ class FX
         c = aud[3] - nzd[3]
 
         @fxes['AUDNZD']['ohlc'][date] = [o, h, l, c]
+      end
+    end
+
+    def calc_nenri
+      @fxes.each do |k, v|
+        roi   = @fxes[k]['roi']
+        nenri = roi / @fxes[k]['profit'].count * 365
+        @fxes[k]['nenri'] = nenri
+      end
+    end
+
+    def calc_sd
+      @fxes.each do |k, v|
+        # calc daily sd
+        profits_delta = []
+        profits = @fxes[k]['profit'].sort{|(d1, p1), (d2, p2)| d1 <=> d2 }.map{|date, profit| profit }
+        profits.each_with_index do |profit, i|
+          break if i == profits.count - 1
+          profits_delta << profits[i + 1] - profits[i]
+        end
+        ave = profits_delta.sum / profits_delta.count
+        var = 0
+        profits_delta.each do |delta|
+          var += (delta - ave) ** 2
+        end
+        sd = Math.sqrt(var / profits_delta.count)
+
+        @fxes[k]['sd'] = sd * Math.sqrt(365)  # sd per year
       end
     end
   # end private
