@@ -123,6 +123,15 @@ __END__
           </tr>
         <% end %>
       </table>
+      <div>
+        <p>リスクリターンに応じて区分しているようです</p>
+        <ul>
+          <li>～1 Bad</li>
+          <li>1～ Good</li>
+          <li>2～ Very Good</li>
+          <li>3～ Excellent</li>
+        </ul>
+      </div>
     </section><!-- //summary -->
 
     <section id="correlation">
