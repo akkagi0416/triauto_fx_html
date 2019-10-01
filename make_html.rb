@@ -16,7 +16,7 @@ end
 
 erb = ERB.new(DATA.read)
 # puts erb.result
-open('index.html', 'w'){|f| f.puts erb.result }
+open('index.html', 'w'){|f| f.write erb.result }
 
 __END__
 
@@ -116,8 +116,12 @@ __END__
               sd      = delta.sd * Math.sqrt(365)
               sharp   = nenri / sd
             %>
+            <!--
             <td><%= sprintf "%.1f", nenri %></td>
             <td><%= sprintf "%.1f", sd %></td>
+            -->
+            <td><%= sprintf "%.1f", fx.fxes[pair]['nenri'] %></td>
+            <td><%= sprintf "%.1f", fx.fxes[pair]['sd'] %></td>
             <td><%= sprintf "%.2f", sharp %></td>
             <td><%= sprintf "%.1f", fx.fxes[pair]['dd'] %></td>
           </tr>
