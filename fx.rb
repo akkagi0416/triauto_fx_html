@@ -29,8 +29,8 @@ class FX
   end
 
   def set
-    # @fxes = set_list_data('list_fx_20190927.json')
-    @fxes = set_list_data('list_fx_20191001.json')
+    # @fxes = set_list_data('list_fx_20191001.json')
+    @fxes = set_list_data('list_fx.json')
     set_profit
     set_ohlc
     calc_AUDNZD

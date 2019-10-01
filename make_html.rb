@@ -92,8 +92,12 @@ __END__
       padding-left: 1rem;
       text-align: left;
     }
-    #correlation td, #correlation th{
+    #correlation td{
       font-size: 0.8rem;
+      text-align: center;
+    }
+    #correlation th{
+      font-size: 0.65rem;
       text-align: center;
     }
     #frontier form{

@@ -5,4 +5,5 @@ url_fx  = "https://attach.triautoetf.invast.jp/ranking/adviser/compositeList.jso
 
 today = Date.today.strftime("%Y%m%d")
 
-open("list_fx_#{today}.json", "w"){|f|  f.write open(url_fx).read }
+# open("list_fx_#{today}.json", "w"){|f|  f.write open(url_fx).read }
+open("list_fx.json", "w"){|f|  f.write open(url_fx).read }

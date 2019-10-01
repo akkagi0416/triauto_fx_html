@@ -20,7 +20,8 @@ def get_detail(id, prefix)
   open("data/#{prefix}_detail.json", 'w'){|f| f.write json }
 end
 
-json = JSON.parse(open('list_fx_20191001.json').read)
+# json = JSON.parse(open('list_fx_20191001.json').read)
+json = JSON.parse(open('list_fx.json').read)
 
 json.each do |row|
   id = row['COMPOSITE_ID']
