@@ -1,6 +1,6 @@
 require 'erb'
 require './fx.rb'
-require '../../calc_rule/myarray.rb'
+require './myarray.rb'
 
 fx = FX.new
 fx.set
