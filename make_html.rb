@@ -1,4 +1,5 @@
 require 'erb'
+require 'dotenv'
 require './fx.rb'
 require './myarray.rb'
 
@@ -7,6 +8,10 @@ fx.set
 json_fx = fx.fxes.to_json
 
 pairs = fx.fxes.keys
+
+# set Google Analytics id
+Dotenv.load
+ga_id = ENV['GA_ID']
 
 def calc_correlation(fx, pair1, pair2)
   arr1 = fx.fxes[pair1]['profit'].map{|date, profit| profit }
@@ -67,10 +72,32 @@ __END__
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title></title>
+  <title>トライオートFXの自動売買データ比較</title>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=<%= ga_id %>"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', '<%= ga_id %>');
+  </script>
   <style>
     body{
+      margin: 0;
       color: #333;
+    }
+    header {
+      background-color: #e9ecef;
+      margin-bottom: 3rem;
+    }
+
+    h1 {
+      margin: 0 auto;
+      width: 80%;
+      max-width:  960px;
+      padding: 1rem 0;
+      font-size: 1.5rem;
     }
     main{
       width: 80%;
@@ -113,6 +140,9 @@ __END__
   </style>
 </head>
 <body>
+  <header>
+    <h1>トライオートFXの自動売買データ比較</h1>
+  </header>
   <main>
     <section id="chart">
       <h2>損益 or チャート比較</h2>
